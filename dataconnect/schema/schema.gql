@@ -1,0 +1,51 @@
+type User @table {
+  email: String!
+  userType: String!
+  createdAt: Timestamp!
+  companyName: String
+  contactName: String
+  phoneNumber: String
+  photoUrl: String
+}
+
+type Company @table {
+  user: User!
+  name: String!
+  companyType: String!
+  createdAt: Timestamp!
+  description: String
+  industry: String
+  website: String
+  address: String
+  logoUrl: String
+}
+
+type ProductService @table {
+  company: Company!
+  name: String!
+  category: String!
+  createdAt: Timestamp!
+  description: String
+  specifications: String
+  priceRange: String
+}
+
+type Inquiry @table {
+  user: User!
+  receivingCompany: Company! # Renamed to avoid conflict with `company` if a Company type also has a field named `company`
+  title: String!
+  description: String!
+  status: String!
+  createdAt: Timestamp!
+  deadline: Timestamp
+  attachments: [String]
+}
+
+type Review @table {
+  user: User!
+  reviewedCompany: Company! # Renamed to avoid conflict with `company` if a Company type also has a field named `company`
+  rating: Int!
+  createdAt: Timestamp!
+  comment: String
+  visibility: String
+}

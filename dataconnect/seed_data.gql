@@ -1,0 +1,84 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This operation is for seeding data and should only be run by authenticated users.") {
+  user1: user_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    email: "john.doe@example.com",
+    userType: "Customer",
+    createdAt: "2023-01-01T10:00:00Z",
+    companyName: "Acme Corp",
+    contactName: "John Doe",
+    phoneNumber: "123-456-7890",
+    photoUrl: "https://example.com/john.jpg"
+  })
+  user2: user_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440001",
+    email: "jane.smith@example.com",
+    userType: "Vendor",
+    createdAt: "2023-01-02T11:00:00Z",
+    companyName: "Beta Solutions",
+    contactName: "Jane Smith",
+    phoneNumber: "098-765-4321",
+    photoUrl: "https://example.com/jane.jpg"
+  })
+  company1: company_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440002",
+    userId: "550e8400-e29b-41d4-a716-446655440000",
+    name: "Global Innovations Inc.",
+    companyType: "Technology",
+    createdAt: "2023-01-03T12:00:00Z",
+    description: "A leading technology company.",
+    industry: "Software",
+    website: "https://globalinnovations.com",
+    address: "123 Tech Lane"
+  })
+  company2: company_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440003",
+    userId: "550e8400-e29b-41d4-a716-446655440001",
+    name: "Creative Designs Studio",
+    companyType: "Creative Agency",
+    createdAt: "2023-01-04T13:00:00Z",
+    description: "Innovative design solutions.",
+    industry: "Design",
+    website: "https://creativedesigns.com",
+    address: "456 Art Street"
+  })
+  productService1: productService_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440004",
+    companyId: "550e8400-e29b-41d4-a716-446655440002",
+    name: "Cloud Hosting Service",
+    category: "Cloud Services",
+    createdAt: "2023-01-05T14:00:00Z",
+    description: "Scalable cloud hosting for businesses.",
+    specifications: "High availability, 24/7 support",
+    priceRange: "$50 - $500/month"
+  })
+  productService2: productService_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440005",
+    companyId: "550e8400-e29b-41d4-a716-446655440003",
+    name: "Web Design Package",
+    category: "Web Development",
+    createdAt: "2023-01-06T15:00:00Z",
+    description: "Custom web design and development.",
+    specifications: "Responsive, SEO friendly",
+    priceRange: "$1000 - $5000"
+  })
+  inquiry1: inquiry_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440006",
+    userId: "550e8400-e29b-41d4-a716-446655440000",
+    receivingCompanyId: "550e8400-e29b-41d4-a716-446655440003",
+    title: "Inquiry about Web Design",
+    description: "Looking for a new website design for my business.",
+    status: "New",
+    createdAt: "2023-01-07T16:00:00Z",
+    deadline: "2023-02-07T17:00:00Z",
+    attachments: ["brief.pdf", "mockup.jpg"]
+  })
+  review1: review_insert(data: {
+    id: "550e8400-e29b-41d4-a716-446655440007",
+    userId: "550e8400-e29b-41d4-a716-446655440000",
+    reviewedCompanyId: "550e8400-e29b-41d4-a716-446655440003",
+    rating: 5,
+    createdAt: "2023-01-08T18:00:00Z",
+    comment: "Excellent web design service!",
+    visibility: "Public"
+  })
+}

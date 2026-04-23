@@ -1,0 +1,60 @@
+query AllCompanies @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public as it retrieves public company information.") {
+  companies {
+    id
+    name
+    companyType
+    industry
+    website
+    description
+    logoUrl
+    address
+    createdAt
+    user {
+      id
+      email
+    }
+  }
+}
+
+query MyInquiries @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users as it retrieves inquiries associated with their account.") {
+  inquiries(where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    title
+    description
+    status
+    deadline
+    createdAt
+    attachments
+    receivingCompany {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateReview($reviewedCompanyId: UUID!, $rating: Int!, $comment: String, $visibility: String) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users as it allows them to create reviews tied to their user ID.") {
+  review_insert(data: {
+    userId_expr: "auth.uid",
+    reviewedCompany: { id: $reviewedCompanyId },
+    rating: $rating,
+    comment: $comment,
+    visibility: $visibility
+  }) {
+    id
+  }
+}
+
+mutation UpdateProductService($id: UUID!, $name: String, $category: String, $description: String, $specifications: String, $priceRange: String) @auth(expr: "exists(request.resource.company.where(user.id_expr == auth.uid))", insecureReason: "This operation is safe to expose to all logged in users as it updates product services owned by the authenticated user's company.") {
+  productService_update(
+    id: $id,
+    data: {
+      name: $name,
+      category: $category,
+      description: $description,
+      specifications: $specifications,
+      priceRange: $priceRange
+    }
+  ) {
+    id
+  }
+}
