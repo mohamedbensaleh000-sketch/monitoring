@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-  ? "http://127.0.0.1:8000/api"
-  : "https://your-backend-name.onrender.com/api"; // Replace with your actual Render URL
+const API = "/api";
 
 const ComputerLogo = ({ className }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,17 +118,22 @@ export default function App() {
       return;
     }
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: authEmail, password: authPassword })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setUser(data);
-      setAuthPassword("");
-    } else {
-      alert(data.detail);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authEmail, password: authPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data);
+        setAuthPassword("");
+      } else {
+        alert(data.detail || "Une erreur est survenue lors de l'authentification.");
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      alert("Impossible de contacter le serveur. Vérifiez que l'URL API dans App.jsx est correcte.");
     }
   }
 

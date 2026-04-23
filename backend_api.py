@@ -8,7 +8,10 @@ from uuid import uuid4
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import os
 
 
 def process_excel_data(file_obj: Any) -> pd.DataFrame:
@@ -590,3 +593,14 @@ def poste_detail(poste_id: str) -> dict[str, Any]:
         "history": history,
         "shiftHistory": shift_history,
     }
+
+
+# Serve static files from the 'frontend/dist' directory
+if os.path.exists("frontend/dist"):
+    app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
+
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    if os.path.exists("frontend/dist/index.html"):
+        return FileResponse("frontend/dist/index.html")
+    return {"detail": "Frontend not found. Make sure to run 'npm run build' in the frontend directory."}
