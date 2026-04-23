@@ -185,13 +185,12 @@ class Store:
         self.alerts = {}
 
 
-def send_email_notification(poste_name: str, error_text: str, duration: float):
+def send_email_notification(poste_name: str, error_text: str, duration: float, receiver_emails: list[str]):
     sender_email = os.getenv("SENDER_EMAIL")
     sender_password = os.getenv("SENDER_PASSWORD")
-    receiver_email = os.getenv("RECEIVER_EMAIL")
     
-    if not all([sender_email, sender_password, receiver_email]):
-        print("EMAIL LOG: Skipping email (credentials not set in environment variables)")
+    if not all([sender_email, sender_password]) or not receiver_emails:
+        print(f"EMAIL LOG: Skipping email (credentials not set or no recipients). Recipients count: {len(receiver_emails)}")
         return
 
     subject = f"ALERTE TECHNIQUE : {poste_name}"
@@ -204,20 +203,19 @@ def send_email_notification(poste_name: str, error_text: str, duration: float):
     Veuillez intervenir rapidement sur le tableau de bord de maintenance.
     """
 
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
     try:
-        # Use Gmail's SMTP settings by default
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
-            server.send_message(msg)
-        print(f"EMAIL LOG: Success - Alert email sent to {receiver_email}")
+            for receiver in receiver_emails:
+                msg = MIMEMultipart()
+                msg['From'] = sender_email
+                msg['To'] = receiver
+                msg['Subject'] = subject
+                msg.attach(MIMEText(body, 'plain'))
+                server.send_message(msg)
+        print(f"EMAIL LOG: Success - Alert emails sent to {len(receiver_emails)} users.")
     except Exception as e:
-        print(f"EMAIL LOG: Failed to send email - {str(e)}")
+        print(f"EMAIL LOG: Failed to send emails - {str(e)}")
 
 
 store = Store()
@@ -458,8 +456,9 @@ def tick_all() -> dict[str, bool]:
                             status="pending"
                         )
                         print(f"PROFESSIONAL MAIL: To Group Maintenance - Machine {poste.name} has a Technical failure: {last_row.get('Error-Text')}. Duration: {duration_mins:.1f} min.")
-                        # Send real email
-                        send_email_notification(poste.name, last_row.get('Error-Text', 'Unknown error'), duration_mins)
+                        # Send real email to all registered users
+                        all_users = list(store.users.keys())
+                        send_email_notification(poste.name, last_row.get('Error-Text', 'Unknown error'), duration_mins, all_users)
     
     return {"ok": True}
 
