@@ -458,6 +458,7 @@ def tick_all() -> dict[str, bool]:
                         print(f"PROFESSIONAL MAIL: To Group Maintenance - Machine {poste.name} has a Technical failure: {last_row.get('Error-Text')}. Duration: {duration_mins:.1f} min.")
                         # Send real email to all registered users
                         all_users = list(store.users.keys())
+                        print(f"EMAIL DEBUG: Found {len(all_users)} registered users: {all_users}")
                         send_email_notification(poste.name, last_row.get('Error-Text', 'Unknown error'), duration_mins, all_users)
     
     return {"ok": True}
