@@ -12,6 +12,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 def process_excel_data(file_obj: Any) -> pd.DataFrame:
@@ -180,6 +183,41 @@ class Store:
         self.postes = {}
         self.users = {}
         self.alerts = {}
+
+
+def send_email_notification(poste_name: str, error_text: str, duration: float):
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
+    receiver_email = os.getenv("RECEIVER_EMAIL")
+    
+    if not all([sender_email, sender_password, receiver_email]):
+        print("EMAIL LOG: Skipping email (credentials not set in environment variables)")
+        return
+
+    subject = f"ALERTE TECHNIQUE : {poste_name}"
+    body = f"""
+    Une défaillance technique a été détectée sur la machine : {poste_name}
+    
+    Détail de l'erreur : {error_text}
+    Durée de l'erreur : {duration:.1f} minutes (temps simulé)
+    
+    Veuillez intervenir rapidement sur le tableau de bord de maintenance.
+    """
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        # Use Gmail's SMTP settings by default
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print(f"EMAIL LOG: Success - Alert email sent to {receiver_email}")
+    except Exception as e:
+        print(f"EMAIL LOG: Failed to send email - {str(e)}")
 
 
 store = Store()
@@ -406,7 +444,7 @@ def tick_all() -> dict[str, bool]:
                 
                 duration_mins = (sim_time - error_start).total_seconds() / 60
                 
-                if duration_mins >= 3:
+                if duration_mins >= 0:
                     # Check if an alert already exists for this error on this machine
                     alert_exists = any(a.poste_id == poste.id and a.status != "fixed" for a in store.alerts.values())
                     if not alert_exists:
@@ -420,6 +458,8 @@ def tick_all() -> dict[str, bool]:
                             status="pending"
                         )
                         print(f"PROFESSIONAL MAIL: To Group Maintenance - Machine {poste.name} has a Technical failure: {last_row.get('Error-Text')}. Duration: {duration_mins:.1f} min.")
+                        # Send real email
+                        send_email_notification(poste.name, last_row.get('Error-Text', 'Unknown error'), duration_mins)
     
     return {"ok": True}
 
