@@ -421,7 +421,23 @@ export default function App() {
                 </div>
               ) : (
                 <div className="alerts-dashboard">
-                  <h1>Tableau de bord Maintenance</h1>
+                  <div className="header-with-action">
+                    <h1>Tableau de bord Maintenance</h1>
+                    <button 
+                      className="ghost test-email-btn" 
+                      onClick={async () => {
+                        const res = await fetch(`${API}/auth/test-email`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: user.email, password: "---" })
+                        });
+                        const data = await res.json();
+                        alert(data.message);
+                      }}
+                    >
+                      📧 Tester l'envoi d'email
+                    </button>
+                  </div>
                   <p>Bienvenue, {user.email}. Voici les alertes en cours.</p>
                   
                   <div className="alerts-list">

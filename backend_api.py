@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 import smtplib
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -178,11 +179,29 @@ class Store:
     postes: dict[str, Poste] = field(default_factory=dict)
     users: dict[str, str] = field(default_factory=dict)  # email -> password
     alerts: dict[str, Alert] = field(default_factory=dict)
+    USERS_FILE = "users_data.json"
 
     def __init__(self) -> None:
         self.postes = {}
         self.users = {}
         self.alerts = {}
+        self.load_users()
+
+    def save_users(self):
+        try:
+            with open(self.USERS_FILE, "w") as f:
+                json.dump(self.users, f)
+        except Exception as e:
+            print(f"STORE ERROR: Could not save users - {e}")
+
+    def load_users(self):
+        if os.path.exists(self.USERS_FILE):
+            try:
+                with open(self.USERS_FILE, "r") as f:
+                    self.users = json.load(f)
+                print(f"STORE: Loaded {len(self.users)} users from disk.")
+            except Exception as e:
+                print(f"STORE ERROR: Could not load users - {e}")
 
 
 def send_email_notification(poste_name: str, error_text: str, duration: float, receiver_emails: list[str]):
@@ -248,7 +267,15 @@ def register(user: User):
     if user.email in store.users:
         raise HTTPException(status_code=400, detail="User already exists")
     store.users[user.email] = user.password
+    store.save_users()
     return {"email": user.email, "token": "mock-token-" + str(uuid4())}
+
+
+@app.post("/api/auth/test-email")
+def test_email(user: User):
+    # This endpoint allows a logged-in user to test if the email system works for them
+    send_email_notification("TEST SYSTEM", "Ceci est un email de test pour vérifier votre configuration.", 0, [user.email])
+    return {"message": f"Email de test envoyé à {user.email}"}
 
 
 @app.post("/api/auth/login")

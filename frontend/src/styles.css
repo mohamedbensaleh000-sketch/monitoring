@@ -933,3 +933,34 @@ td {
 .dot.s1 { background: #0ea5e9; }
 .dot.s2 { background: #1d4ed8; }
 .dot.s3 { background: #10b981; }
+.header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.test-email-btn {
+  background: white;
+  color: #a855f7;
+  border: 2px solid #a855f7;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.test-email-btn:hover {
+  background: #a855f7;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+}
+
+.test-email-btn:active {
+  transform: translateY(0);
+}
